@@ -25,6 +25,11 @@ Download binary and copy to c:\Program Fiels\utils
 Update path env variable.
 
 ### Install Maven
+Download and copy to c:\Program Files\utils\maven
+
+### Install Gradle
+Download and copy to c:\Program Files\utils\gradle
+
 
 
 
@@ -42,6 +47,18 @@ $ minikube profile mk-dev
 $ minikube dashboard
 # (if it fails verifying proxy then check dashboard pods are started and try again)
 ```
+
+### Troubleshooting
+1. Remember to update hosts file for each restart because the `minikube ip` will always change
+2. If start hangs at 'verifying ingress' then maybe one of teh pods didn't start.
+   ```sh
+   kubectl get pods -n ingress-nginx
+   kubectl delete pods -a -n ingress-nginx
+   ```
+3. For connectivity issues run a busybox pod with curl to help test internal IP and URL etc
+   ```sh
+   $ kubectl run curl-client -n default --image=radial/busyboxplus:curl -i --tty --rm
+   ```
 
 ### Update .kube contexts
 Update the `.kube/config` file with additional contextx if you want to run kubectl commands from WSL.
@@ -228,10 +245,14 @@ You should get enough workload to cause the hpa to scale the pods.  If not then 
 ## RealWord Application
 https://codebase.show/projects/realworld
 
-For each application fork the repo from the github ui to <davidmccarty> then clone it to local workspace
+For each application fork the repo from the github ui to <davidmccarty>, rename it and then clone it to local workspace
 ```sh
-$ cd real-world-app
-$ git clone
+$ git clone https://github.com/davidmccarty/realworld-front-angular.git
+$ git clone https://github.com/davidmccarty/realworld-back-springboot.git
+```
+
+
+
 ### Front-End Angular
 ```sh
 # Upgrade npm
@@ -242,5 +263,5 @@ $ ng --version
 ```
 Build the project
 ```sh
-$ cd real-world-app\angular-realworld-example-app
+$ cd realworld-front-angular
 $ npm install
