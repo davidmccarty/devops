@@ -47,9 +47,12 @@ Create user with admin privilege
    When we setup a remote agent we will have to setup TLS certificate (or choose option to ignore it).
    Also the channel back to the master from teh slave is open, but for a remote slave this will also heve to be setup.
 
-## Create test pipeline
+## Create test pipeline for kubernetes
 1. New item called 'test-slave-build' of type 'pipeline'
 2. Use the pipeline1 at `tutorial/pipeline1.gvy` and paste it into the script section of the pipeline definition
 from https://gist.github.com/darinpope/67c297b3ccc04c17991b22e1422df45a
 3. Run pipeline and view logs
 4. Repeat with pipeline2 and pipeline3
+
+## Setup docker cloud agent
+1. See tutorial/pipeline4.gvy for example of creating docker-in-docker container to expose docker daemon to other containers
