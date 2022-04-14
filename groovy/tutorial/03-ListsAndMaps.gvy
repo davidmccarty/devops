@@ -5,7 +5,7 @@ class Example {
 
       List list = []
       println list
-      for (int x = 0; x < 10; x++) {
+      for (int x in 0..9) {
          list.add(x)
          println list
       }
