@@ -1,0 +1,21 @@
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: artifactory-registry
+  namespace: artifactory-registry
+  labels:
+    app: artifactory
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: jfrog.mk-devops.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jfrog-container-registry-artifactory
+                port:
+                  number: 8082
