@@ -89,6 +89,10 @@ Update the hosts file
 # c:\Windows\System32\drivers\etc\hosts
 172.18.141.117 dashboard.mk-devops.local registry.mk-devops.local
 ```
+### Enable CoreDNS
+CoreDNS is a replacement for the default kubernetes internal DNS (kube-dns) used to resolve resource names. From kubernetes 1.23 CoreDNS becomes the default.
+1. Install CoreDNS  (to be done https://coredns.io/2017/04/28/coredns-for-minikube/)
+
 
 
 
@@ -131,37 +135,6 @@ Now open browser at http://jenkins.mk-devops.local and login with the password.
 Install recommended plugins.  More will be added later.
 
 When prompted create a new admin user  --> dmccarty/<pwd>
-
-
-## Install Tekton on minikube
-Install into default namespace `tekton-pipelines`
-```sh
-# install
-$ kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.16.3/release.yaml
-```
-
-## Install Artifactory on minikube mk-devops
-https://github.com/jfrog/charts/tree/master/stable/artifactory
-```sh
-$ helm repo add jfrog https://charts.jfrog.io
-$ helm repo update
-$ kubectl create namespace artifactory
-$ helm upgrade --install artifactory --namespace artifactory jfrog/artifactory
-NOTES:
-Congratulations. You have just deployed JFrog Artifactory!
-
-1. Get the Artifactory URL by running these commands:
-
-   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-         You can watch the status of the service by running 'kubectl get svc --namespace artifactory -w artifactory-artifactory-nginx'
-   export SERVICE_IP=$(kubectl get svc --namespace artifactory artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-   echo http://$SERVICE_IP/
-
-2. Open Artifactory in your browser
-   Default credential for Artifactory:
-   user: admin
-   password: password
-```
 
 
 ## Install ArgoCD
