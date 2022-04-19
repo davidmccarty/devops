@@ -35,9 +35,6 @@ Download and copy to c:\Program Files\utils\gradle
 choco install kustomize
 ```
 
-
-
-
 ## Setup mk-dev minikube profile for hosting the application
 
 ### Run minikube from I drive
@@ -97,8 +94,6 @@ Update the hosts file
 ### Enable CoreDNS
 CoreDNS is a replacement for the default kubernetes internal DNS (kube-dns) used to resolve resource names. From kubernetes 1.23 CoreDNS becomes the default.
 1. Install CoreDNS  (to be done https://coredns.io/2017/04/28/coredns-for-minikube/)
-
-
 
 
 
@@ -245,6 +240,39 @@ $ yarn config unset registry
 
 Web UI
 http://npm.mk-devops.local
+
+
+## Install Gitea as local git registry
+Install from helm
+```sh
+$ helm repo add gitea-charts https://dl.gitea.io/charts/
+$ kubectl create namespace gitea
+$ helm install gitea gitea-charts/gitea --namespace gitea  --set clusterDomain=mk-devops.local
+NAME: gitea
+LAST DEPLOYED: Tue Apr 19 11:25:38 2022
+NAMESPACE: gitea
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+  echo "Visit http://127.0.0.1:3000 to use your application"
+  kubectl --namespace gitea port-forward svc/gitea-http 3000:3000
+```
+Create ingress
+```sh
+$ kubectl apply -f gitea/ingress.yaml
+```
+Update the hosts file
+```
+# c:\Windows\System32\drivers\etc\hosts
+172.23.151.172 git.mk-devops.local
+```
+Open UI from browser
+http://git.mk-devops.local
+
+Create a user dmccarty/<password>
+
+
 
 ## Deploy a load test application
 https://www.techtarget.com/searchitoperations/tutorial/Kubernetes-performance-testing-tutorial-Load-test-a-cluster
