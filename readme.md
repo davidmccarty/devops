@@ -30,6 +30,11 @@ Download and copy to c:\Program Files\utils\maven
 ### Install Gradle
 Download and copy to c:\Program Files\utils\gradle
 
+### Install kustomize
+```ps1
+choco install kustomize
+```
+
 
 
 
@@ -166,7 +171,7 @@ time="2022-04-02T09:24:02+02:00" level=fatal msg="Argo CD server address unspeci
 Add ingress
 - first need to patch the minikube ingress controller to support passthru
 ```sh
-$ edit deployment ingress-nginx-controller -n ingress-nginx
+$ kubectl edit deployment ingress-nginx-controller -n ingress-nginx
 # and add the following argument
 # - --enable-ssl-passthrough
 ```
@@ -183,7 +188,7 @@ UI is not available at http://argocd.mk-devops.local
 and you can login with user `admin` and password from below
 ```sh
 $ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
-# --> user=admin pwd=oNxERlOopRZUgzFM
+# --> user=admin pwd=8Fl6l-eRzpEms8bh
 $ argocd login argocd.mk-devops.local
 WARNING: server certificate had error: x509: certificate signed by unknown authority. Proceed insecurely (y/n)? y
 Username: admin
@@ -192,6 +197,54 @@ Password:
 Context 'argocd.mk-devops.local' updated
 ```
 
+## Install Verdaccio as NPM local registry
+https://verdaccio.org/docs/kubernetes/
+```sh
+$ helm repo add verdaccio https://charts.verdaccio.org
+$ kubectl create namespace verdaccio
+$ helm install npm verdaccio/verdaccio --namespace verdaccio
+NAME: npm
+LAST DEPLOYED: Mon Apr 18 14:36:11 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=verdaccio,app.kubernetes.io/instance=npm" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+```
+Create an ingress to allow external access
+```sh
+$ kubectl apply -f verdaccio/ingress.yaml
+```
+Update the hosts file
+```
+# c:\Windows\System32\drivers\etc\hosts
+172.23.151.172 npm.mk-devops.local
+```
+
+Install the CLI (? not working ?)
+```sh
+$ npm install -g verdaccio
+$ verdaccio info
+```
+
+Test
+```sh
+# For internal containers use http://npm-verdaccio.verdac cio.svc.mk-devops.local:4873
+$ npm set registry http://npm.mk-devops.local
+$ yarn config set registry http://npm.mk-devops.local
+$ npm view webpack versions --json
+# To unset
+$ npm config rm registry
+$ yarn config unset registry
+```
+
+Web UI
+http://npm.mk-devops.local
 
 ## Deploy a load test application
 https://www.techtarget.com/searchitoperations/tutorial/Kubernetes-performance-testing-tutorial-Load-test-a-cluster

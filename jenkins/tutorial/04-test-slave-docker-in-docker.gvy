@@ -9,16 +9,11 @@ pipeline {
           - name: docker-socket
             emptyDir: {}
           containers:
-          - name: node
-            image: node:16-alpine3.12
-            command:
-            - sleep
-            - 99d
           - name: docker
             image: docker:20.10.13
             command:
-            - sleep
-            - 99d
+            - cat
+            tty: true
             volumeMounts:
             - name: docker-socket
               mountPath: /var/run
@@ -32,17 +27,26 @@ pipeline {
         '''
     }
   }
+  environment {
+    DOCKER_LOGIN = credentials('docker-davidmccarty')
+  }
+  parameters {
+    string(
+      name: 'ALPINE_VERSION',
+      defaultValue: "3.14",
+      trim: true,
+      description: 'Alpine docker image version'
+      )
+  }
   stages {
     stage('Run') {
       steps {
-        container('node') {
-          sh 'npm version'
-          sh 'touch hello.txt'
-          sh 'ls -ltr'
-        }
         container('docker') {
           sh 'docker version'
-          sh 'ls -ltr'
+          sh "docker pull alpine:$params.ALPINE_VERSION"
+          sh "docker tag alpine:$params.ALPINE_VERSION davidmccarty/$params.ALPINE_VERSION"
+          sh "docker login -u $DOCKER_LOGIN_USR -p $DOCKER_LOGIN_PSW"
+          sh "docker push davidmccarty/$params.ALPINE_VERSION"
         }
       }
     }

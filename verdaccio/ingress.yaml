@@ -1,0 +1,20 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: npm-verdaccio
+  namespace: verdaccio
+  labels:
+    app: npm-verdaccio
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: npm.mk-devops.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: npm-verdaccio
+                port:
+                  number: 4873

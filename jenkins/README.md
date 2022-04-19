@@ -27,7 +27,7 @@ Create user with admin privilege
    ```sh
    $ kubectl create namespace jenkins-build
    $ kubectl create serviceaccount jenkins-builder -n jenkins-build
-   $ kubectl create rolebinding jenkins-admin-binding --clusterrole=admin --serviceaccount=jenkins-build:jenkins-builder -n jenkins-build
+   $ kubectl create clusterrolebinding jenkins-builder --clusterrole=cluster-admin --serviceaccount=jenkins-build:jenkins-builder
    # display the token
    $ kubectl describe secret jenkins-builder -n jenkins-build
    ```
@@ -54,5 +54,8 @@ from https://gist.github.com/darinpope/67c297b3ccc04c17991b22e1422df45a
 3. Run pipeline and view logs
 4. Repeat with pipeline2 and pipeline3
 
-## Setup docker cloud agent
+## Setup docker cloud agent container
 1. See tutorial/pipeline4.gvy for example of creating docker-in-docker container to expose docker daemon to other containers
+
+## Setup kubectl cloud agent container
+1. See tutorial/pipeline5.gvy for example of running kubctl from container
