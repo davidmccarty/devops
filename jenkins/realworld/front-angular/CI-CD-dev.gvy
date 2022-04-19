@@ -48,11 +48,6 @@ pipeline {
         trim: true,
         description: 'Git branch for realworld-front-angular-deploy'
       )
-      booleanParam(
-        defaultValue: false,
-        description: 'Set true to build with KANIKO else use docker-in-docker',
-        name: 'KANIKO'
-      )
     }
     stages {
       stage('Checkout') {
@@ -79,35 +74,17 @@ pipeline {
             sh 'cd build-repo && yarn config set http://npm-verdaccio.verdaccio.svc.mk-devops.local:4873'
             sh 'npm install --global @angular/cli'
             sh 'cd build-repo && yarn install'
+            sh 'cd build-repo && ng build'
           }
         }
       }
       stage('Build Docker Image - docker-in-docker') {
-        when {
-          not {
-            expression {
-              return params.KANIKO
-            }
-          }
-        }
         steps {
           container('docker') {
             sh 'docker login -u $DOCKER_LOGIN_USR -p $DOCKER_LOGIN_PSW'
             sh 'cd build-repo && docker build -f dockerfile-pipeline -t realworld-front-angular-jenkins:1.0.0 .'
             sh 'docker tag realworld-front-angular-jenkins:1.0.0 davidmccarty/realworld-front-angular-jenkins:1.0.0'
             sh 'docker push davidmccarty/realworld-front-angular-jenkins:1.0.0'
-          }
-        }
-      }
-      stage('Build Docker Image - kaniko') {
-        when {
-          expression {
-            return params.KANIKO
-          }
-        }
-        steps {
-          container('docker') {
-            sh 'echo ********   TODO ***********'
           }
         }
       }
