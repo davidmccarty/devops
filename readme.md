@@ -272,6 +272,25 @@ Modify the env variable in the gitea statefulset
               value: http://git.mk-devops.local
         ```
 
+Patch the secret gitea.gitea-inline-config to add an entry allowing webhook to target local endpoints
+Required config value is set into /data/gitea/conf/app.ini
+```ini
+[webhook]
+ALLOWED_HOST_LIST = external, *.mk-devops.local
+```
+To set this value you need to patch the secret using the following value
+```sh
+# get the base64 value
+$ echo ALLOWED_HOST_LIST=external,*.mk-devops.local | base64
+QUxMT1dFRF9IT1NUX0xJU1Q9ZXh0ZXJuYWwsKi5tay1kZXZvcHMubG9jYWwK
+# edit the secret
+$ kubectl edit secret -n gitea gitea-inline-config
+# and add a new line
+data:
+  webhook: QUxMT1dFRF9IT1NUX0xJU1Q9ZXh0ZXJuYWwsKi5tay1kZXZvcHMubG9jYWwK
+```
+The restart the pod and check the /data/gitea/conf/app.ini file.
+
 
 Update the hosts file
 ```
