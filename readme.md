@@ -61,6 +61,14 @@ $ minikube dashboard
    ```sh
    $ kubectl run curl-client -n default --image=radial/busyboxplus:curl -i --tty --rm
    ```
+4. Cleaning up PV and PVC after deleting them via the console
+   ```sh
+   $ minikube ssh
+   $ login root
+   $ ls /data
+   $ ls /tmp/hostpath-provisioner
+   $ hostpath_pv
+   ```
 
 ### Update .kube contexts
 Update the `.kube/config` file with additional contextx if you want to run kubectl commands from WSL.
@@ -229,7 +237,7 @@ $ verdaccio info
 
 Test
 ```sh
-# For internal containers use http://npm-verdaccio.verdac cio.svc.mk-devops.local:4873
+# For internal containers use http://npm-verdaccio.verdaccio.svc.mk-devops.local:4873
 $ npm set registry http://npm.mk-devops.local
 $ yarn config set registry http://npm.mk-devops.local
 $ npm view webpack versions --json
@@ -247,7 +255,8 @@ Install from helm
 ```sh
 $ helm repo add gitea-charts https://dl.gitea.io/charts/
 $ kubectl create namespace gitea
-$ helm install gitea gitea-charts/gitea --namespace gitea  --set clusterDomain=mk-devops.local
+$ helm install gitea gitea-charts/gitea --namespace gitea  --set clusterDomain=mk-devops.local --set config.server.DOMAIN=mk-devops.local --set config.server.ROOT_URL=git.mk-devops.local
+$ helm install gitea gitea-charts/gitea --namespace gitea -f gitea/values.yaml
 NAME: gitea
 LAST DEPLOYED: Tue Apr 19 11:25:38 2022
 NAMESPACE: gitea
@@ -255,13 +264,15 @@ STATUS: deployed
 REVISION: 1
 NOTES:
 1. Get the application URL by running these commands:
-  echo "Visit http://127.0.0.1:3000 to use your application"
-  kubectl --namespace gitea port-forward svc/gitea-http 3000:3000
+  http://git.mk-devops.local/
 ```
-Create ingress
-```sh
-$ kubectl apply -f gitea/ingress.yaml
-```
+Modify the env variable in the gitea statefulset
+        ```yaml
+            - name: ROOT_URL
+              value: http://git.mk-devops.local
+        ```
+
+
 Update the hosts file
 ```
 # c:\Windows\System32\drivers\etc\hosts
@@ -270,7 +281,7 @@ Update the hosts file
 Open UI from browser
 http://git.mk-devops.local
 
-Create a user dmccarty/<password>
+Login as user dmccarty/passw0rd  (setup in values.yaml)
 
 
 
