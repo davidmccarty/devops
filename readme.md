@@ -44,11 +44,31 @@ choco install kustomize
 ### Create minikube instance mk-dev
 ```sh
 # Setup dev cluster
-$ minikube start -p mk-dev --driver hyperv --cpus 2 --memory 4g  --disk-size 20GB --dns-domain mk-dev.local --kubernetes-version 1.20.0
+$ minikube start -p mk-dev --driver hyperv --cpus 2 --memory 4g  --disk-size 20GB --dns-domain mk-dev.local --kubernetes-version 1.23.0
 $ minikube profile mk-dev
-$ minikube dashboard
+$ minikube addons enable ingress
+$ minikube addons enable metrics-server
+$ minikube addons enable dashboard
+$ minikube addons enable registry
+$ minikube addons enable registry-aliases
 # (if it fails verifying proxy then check dashboard pods are started and try again)
+$ minikube ip
+
 ```
+Create ingress for dashboard and registry
+```sh
+$ kubectl apply -f install/mk-dev/dashboard_ingress.yaml
+$ kubectl apply -f install/mk-dev/registry_ingress.yaml  # TODO - TLS to be fixed
+```
+Update the hosts file
+```
+# c:\Windows\System32\drivers\etc\hosts
+172.18.141.117 dashboard.mk-dev.local registry.mk-dev.local
+```
+### Enable CoreDNS
+CoreDNS is a replacement for the default kubernetes internal DNS (kube-dns) used to resolve resource names. From kubernetes 1.23 CoreDNS becomes the default.
+1. Install CoreDNS  (to be done https://coredns.io/2017/04/28/coredns-for-minikube/)
+
 
 ### Troubleshooting
 1. Remember to update hosts file for each restart because the `minikube ip` will always change
@@ -84,6 +104,7 @@ $ minikube addons enable ingress
 $ minikube addons enable metrics-server
 $ minikube addons enable dashboard
 $ minikube addons enable registry
+$ minikube addons enable registry-aliases
 
 # WARNING - this will change each time you restart minikube so rememeber to update hosts file entries
 $ minikube ip
@@ -91,8 +112,8 @@ $ minikube ip
 ```
 Create ingress for dashboard and registry
 ```sh
-$ kubectl apply -f minikube\dashboard_ingress.yaml
-$ kubectl apply -f minikube\registry_ingress.yaml  # TODO - TLS to be fixed
+$ kubectl apply -f install/mk-devops/dashboard_ingress.yaml
+$ kubectl apply -f install/mk-devops/registry_ingress.yaml  # TODO - TLS to be fixed
 ```
 Update the hosts file
 ```
@@ -102,7 +123,6 @@ Update the hosts file
 ### Enable CoreDNS
 CoreDNS is a replacement for the default kubernetes internal DNS (kube-dns) used to resolve resource names. From kubernetes 1.23 CoreDNS becomes the default.
 1. Install CoreDNS  (to be done https://coredns.io/2017/04/28/coredns-for-minikube/)
-
 
 
 ## Install Jenkins on minikube mk-devops
@@ -171,6 +191,14 @@ argocd: v2.3.3+07ac038
   Platform: windows/amd64
 time="2022-04-02T09:24:02+02:00" level=fatal msg="Argo CD server address unspecified"
 ```
+Modify the deployment for 'argocd-server' and add --insecure flag
+```yaml
+spec:
+  containers:
+  - command:
+    - argocd-server
+    - --insecure
+```
 Add ingress
 - first need to patch the minikube ingress controller to support passthru
 ```sh
@@ -199,6 +227,23 @@ Password:
 'admin:login' logged in successfully
 Context 'argocd.mk-devops.local' updated
 ```
+
+## Install Tekton
+**Requires kubernetes >1.21 so do the following on minikube profile 'mk-dev'**
+Creates all resources into namespace called 'tekton-pipelines'
+```sh
+$ kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+$ kubectl get pods --namespace tekton-pipelines
+NAME                                         READY   STATUS    RESTARTS   AGE
+tekton-pipelines-controller-f7c657f7-zn9f8   1/1     Running   0          4m7s
+tekton-pipelines-webhook-6d85898ff8-t7cgk    1/1     Running   0          4m7
+```
+Install dashboard (into tekton-pipelines namespace) and ingress
+```sh
+$ kubectl apply --filename https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml
+$ kubectl apply -f tekton/ingress.yaml
+
+
 
 ## Install Verdaccio as NPM local registry
 https://verdaccio.org/docs/kubernetes/
